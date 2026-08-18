@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Manrope', 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background:
+    radial-gradient(circle at top left, rgba(182, 140, 103, 0.18), transparent 28%),
+    radial-gradient(circle at top right, rgba(122, 78, 45, 0.14), transparent 22%),
+    linear-gradient(180deg, #f4ecdf 0%, #f7efe4 52%, #f4ecdf 100%);
+  color: #3f2a1d;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+::selection {
+  background: rgba(122, 78, 45, 0.2);
+  color: #3f2a1d;
+}
+
+/* Hide scrollbars globally but keep functionality */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Print utility styles */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  body * {
+    visibility: hidden;
+  }
+  .printable-timetable, .printable-timetable * {
+    visibility: visible;
+  }
+  .printable-timetable {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
