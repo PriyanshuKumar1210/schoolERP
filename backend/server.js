@@ -139,32 +139,32 @@ server.listen(PORT, () => {
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 
   // Auto Notice Expiration Cleanup Task
-  const Notice = require('./models/Notice');
-  const { deleteCloudinaryFile } = require('./utils/cloudinaryHelper');
+  // const Notice = require('./models/Notice');
+  // const { deleteCloudinaryFile } = require('./utils/cloudinaryHelper');
 
-  const cleanupExpiredNotices = async () => {
-    try {
-      const expiredNotices = await Notice.find({ expiresAt: { $lte: new Date() } });
-      if (expiredNotices.length > 0) {
-        console.log(`Found ${expiredNotices.length} expired notices. Cleaning up...`);
-        for (const notice of expiredNotices) {
-          if (notice.attachments && notice.attachments.length > 0) {
-            for (const url of notice.attachments) {
-              if (url) await deleteCloudinaryFile(url);
-            }
-          }
-          await Notice.findByIdAndDelete(notice._id);
-          console.log(`Automatically deleted expired notice: ${notice.title}`);
-        }
-      }
-    } catch (err) {
-      console.error('Error in expired notice cleanup scheduler:', err);
-    }
-  };
+  // const cleanupExpiredNotices = async () => {
+  //   try {
+  //     const expiredNotices = await Notice.find({ expiresAt: { $lte: new Date() } });
+  //     if (expiredNotices.length > 0) {
+  //       console.log(`Found ${expiredNotices.length} expired notices. Cleaning up...`);
+  //       for (const notice of expiredNotices) {
+  //         if (notice.attachments && notice.attachments.length > 0) {
+  //           for (const url of notice.attachments) {
+  //             if (url) await deleteCloudinaryFile(url);
+  //           }
+  //         }
+  //         await Notice.findByIdAndDelete(notice._id);
+  //         console.log(`Automatically deleted expired notice: ${notice.title}`);
+  //       }
+  //     }
+  //   } catch (err) {
+  //     console.error('Error in expired notice cleanup scheduler:', err);
+  //   }
+  // };
 
   // Run immediately on boot, and then every hour
-  cleanupExpiredNotices();
-  setInterval(cleanupExpiredNotices, 60 * 60 * 1000);
+  // cleanupExpiredNotices();
+  // setInterval(cleanupExpiredNotices, 60 * 60 * 1000);
 });
 
 // Handle Unhandled Rejections
