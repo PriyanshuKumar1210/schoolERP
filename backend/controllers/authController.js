@@ -194,6 +194,78 @@ exports.register = async (req, res) => {
   }
 };
 // Login User
+// exports.login = async (req, res) => {
+//   try {
+//     const { email, password, schoolCode } = req.body;
+
+//     if (!email || !password || !schoolCode) {
+//       return res
+//         .status(400)
+//         .json({ message: "Email, password, and school code are required" });
+//     }
+
+//     // Find school by code
+//     const school = await School.findOne({ schoolCode: schoolCode });
+//     if (!school) {
+//       return res.status(404).json({ message: "School does not exist" });
+//     }
+
+//     // Find user across respective collections
+//     let user = null;
+//     user = await User.findOne({
+//       email,
+//       schoolId: school._id,
+//       role: "admin",
+//     }).select("+password");
+//     if (!user) {
+//       user = await Teacher.findOne({ email, schoolId: school._id }).select(
+//         "+password",
+//       );
+//     }
+    
+
+//     if (!user) {
+//       return res.status(401).json({ message: "Invalid credentials" });
+//     }
+
+//     // Check password
+//     const isPasswordValid = await comparePassword(password, user.password);
+//     if (!isPasswordValid) {
+//       return res.status(401).json({ message: "Invalid credentials" });
+//     }
+
+//     // Generate tokens
+//     const accessToken = generateAccessToken(user._id, user.schoolId, user.role);
+//     const refreshToken = generateRefreshToken(
+//       user._id,
+//       user.schoolId,
+//       user.role,
+//     );
+
+//     // Save refresh token
+//     user.refreshTokens.push({ token: refreshToken });
+//     user.lastLogin = new Date();
+//     await user.save();
+
+//     user.password = undefined;
+//     const schoolData = await School.findById(user.schoolId).populate(
+//       "adminId",
+//       "name email phone",
+//     );
+
+//     res.json({
+//       message: "Login successful",
+//       user,
+//       school: schoolData,
+//       accessToken,
+//       refreshToken,
+//     });
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
+
 exports.login = async (req, res) => {
   try {
     const { email, password, schoolCode } = req.body;
@@ -204,68 +276,63 @@ exports.login = async (req, res) => {
         .json({ message: "Email, password, and school code are required" });
     }
 
-    // Find school by code
-    const school = await School.findOne({ code: schoolCode });
+    // 1. Find school by code
+    const school = await School.findOne({ schoolCode: schoolCode });
     if (!school) {
       return res.status(404).json({ message: "School does not exist" });
     }
 
-    // Find user across respective collections
-    let user = null;
-    user = await User.findOne({
+    // 2. Search for user across User/Admin or Teacher collections
+    let user = await User.findOne({
       email,
       schoolId: school._id,
       role: "admin",
     }).select("+password");
+
+    let role = "admin";
+
     if (!user) {
-      user = await Teacher.findOne({ email, schoolId: school._id }).select(
-        "+password",
-      );
-    }
-    if (!user) {
-      user = await Student.findOne({ email, schoolId: school._id }).select(
-        "+password",
-      );
+      user = await Teacher.findOne({ email, schoolId: school._id }).select("+password");
+      role = user?.role || "teacher";
     }
 
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // Check password
+    // 3. Verify password
     const isPasswordValid = await comparePassword(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // Generate tokens
-    const accessToken = generateAccessToken(user._id, user.schoolId, user.role);
-    const refreshToken = generateRefreshToken(
-      user._id,
-      user.schoolId,
-      user.role,
-    );
+    // 4. Generate JWT Tokens
+    const accessToken = generateAccessToken(user._id, user.schoolId, role);
+    const refreshToken = generateRefreshToken(user._id, user.schoolId, role);
 
-    // Save refresh token
+    // 5. Save Refresh Token (keep max 5 sessions)
+    if (!user.refreshTokens) user.refreshTokens = [];
     user.refreshTokens.push({ token: refreshToken });
+    if (user.refreshTokens.length > 5) {
+      user.refreshTokens.shift();
+    }
+
     user.lastLogin = new Date();
     await user.save();
 
-    user.password = undefined;
-    const schoolData = await School.findById(user.schoolId).populate(
-      "adminId",
-      "name email phone",
-    );
-
-    res.json({
+    // 6. Return exact structured response
+    return res.json({
       message: "Login successful",
-      user,
-      school: schoolData,
+      userName: user.name,
+      userEmail: user.email,
+      phone: user.phone || "",
+      role: role,
+      isActive: user.isActive ?? true,
       accessToken,
-      refreshToken,
+      refreshToken
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
 
