@@ -166,7 +166,7 @@ export default function SchoolRegistration() {
           </div>
 
           <h1 className="max-w-xl text-5xl font-black leading-tight tracking-tight text-[#3f2a1d] lg:text-6xl">
-            Create one school account and keep the whole system under one code.
+            Create one d account and keep the whole system under one code.
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-8 text-[#6d4c35]">
             The admin account, school profile and access code are created together so the login flow stays simple later.
