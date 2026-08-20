@@ -95,8 +95,9 @@ export default function Login() {
         password: formData.password,
         schoolCode: formData.schoolCode,
       });
+      console.log(response);
 
-      const { user, school, accessToken, refreshToken } = response.data;
+      const { user, school, accessToken, refreshToken,userRole } = response.data;
 
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
@@ -110,7 +111,7 @@ export default function Login() {
       toast.success('Login successful!');
 
       setTimeout(() => {
-        switch (user.role) {
+        switch (userRole) {
           case 'admin':
             navigate('/admin/dashboard', { replace: true });
             break;
