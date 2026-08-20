@@ -1,21 +1,30 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowRight, BookOpen, Building2, CheckCircle, Eye, EyeOff, Loader, Mail, Lock, MapPin, Phone, Users, GraduationCap } from 'lucide-react';
+import { 
+  ArrowRight, 
+  Building2, 
+  Check, 
+  Eye, 
+  EyeOff, 
+  Loader, 
+  Mail, 
+  Lock, 
+  MapPin, 
+  Phone, 
+  Users, 
+  FileText 
+} from 'lucide-react';
 import { Toaster, toast } from 'react-hot-toast';
-import apiClient from '../utils/apiClient';
+import { authService } from '../services/api';
 
 export default function SchoolRegistration() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [role, setRole] = useState('admin');
   const [formData, setFormData] = useState({
     schoolName: '',
-    schoolCode: '',
-    schoolCodeForMember: '',
     email: '',
-    name: '',
     password: '',
     confirmPassword: '',
     adminName: '',
@@ -66,78 +75,38 @@ export default function SchoolRegistration() {
     setLoading(true);
 
     try {
-      if (role === 'admin') {
-        if (!formData.schoolName.trim()) {
-          toast.error('School name is required');
-          setLoading(false);
-          return;
-        }
-
-        if (!formData.schoolCode.trim()) {
-          toast.error('School code is required');
-          setLoading(false);
-          return;
-        }
-
-        if (!formData.adminName.trim()) {
-          toast.error('Admin name is required');
-          setLoading(false);
-          return;
-        }
-
-        await apiClient.post('/schools', {
-          name: formData.schoolName,
-          code: formData.schoolCode,
-          email: formData.email,
-          phone: formData.phone,
-          address: {
-            street: formData.address,
-            city: formData.city,
-            state: formData.state,
-          },
-          principalName: 'Principal',
-          principalEmail: formData.email,
-          adminName: formData.adminName,
-          adminEmail: formData.email,
-          adminPassword: formData.password,
-        });
-
-        toast.success('School registered successfully!');
-      } else {
-        if (!formData.schoolName.trim()) {
-          toast.error('School name is required');
-          setLoading(false);
-          return;
-        }
-
-        if (!formData.schoolCodeForMember.trim()) {
-          toast.error('School code is required');
-          setLoading(false);
-          return;
-        }
-
-        if (!formData.name.trim()) {
-          toast.error('Name is required');
-          setLoading(false);
-          return;
-        }
-
-        await apiClient.post('/auth/register', {
-          role,
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          phone: formData.phone,
-          schoolCode: formData.schoolCodeForMember,
-        });
-
-        toast.success(`${role} registered successfully!`);
+      if (!formData.schoolName.trim()) {
+        toast.error('School name is required');
+        setLoading(false);
+        return;
       }
+
+      if (!formData.adminName.trim()) {
+        toast.error('Admin name is required');
+        setLoading(false);
+        return;
+      }
+
+      const response = await authService.register({
+        schoolName: formData.schoolName,
+        userName: formData.adminName,
+        email: formData.email,
+        phone: formData.phone,
+        password: formData.password,
+        role: 'admin',
+        address: {
+          street: formData.address,
+          city: formData.city,
+          state: formData.state,
+        },
+      });
+
+      toast.success(response.data?.message || 'School registered successfully!');
 
       setTimeout(() => {
         navigate('/login', {
           state: {
-            schoolCode: role === 'admin' ? formData.schoolCode : formData.schoolCodeForMember,
+            schoolCode: response.data?.school?.schoolCode || '',
             email: formData.email,
           },
         });
@@ -149,296 +118,315 @@ export default function SchoolRegistration() {
     }
   };
 
+  // Helper checks for password strength indicators
+  const password = formData.password || '';
+  const reqs = {
+    minLen: password.length >= 6,
+    capital: /[A-Z]/.test(password),
+    number: /[0-9]/.test(password),
+    special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(password),
+  };
+
+  const passedCount = Object.values(reqs).filter(Boolean).length;
+
   return (
-    <div className="min-h-screen bg-[#f4ecdf] px-4 py-10 text-[#3f2a1d] sm:px-6 lg:px-8">
+    <div className="flex min-h-screen w-full bg-[#0d213a]">
       <Toaster position="top-right" />
 
-      <div className="mx-auto grid min-h-[calc(100vh-2.5rem)] max-w-7xl gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
-        <div className="rounded-[2rem] border border-[#d9c5b0] bg-gradient-hero p-8 shadow-lg shadow-[#b68c67]/15 lg:p-10">
-          <div className="mb-6 flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#7a4e2d] text-[#f7efe4]">
-              <BookOpen className="h-6 w-6" />
-            </div>
-            <div>
-              <p className="text-lg font-extrabold text-[#3f2a1d]">SchoolHub</p>
-              <p className="text-sm text-[#7f634e]">Register a new school</p>
-            </div>
-          </div>
-
-          <h1 className="max-w-xl text-5xl font-black leading-tight tracking-tight text-[#3f2a1d] lg:text-6xl">
-            Create one d account and keep the whole system under one code.
-          </h1>
-          <p className="mt-5 max-w-xl text-lg leading-8 text-[#6d4c35]">
-            The admin account, school profile and access code are created together so the login flow stays simple later.
-          </p>
-
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            {[
-              ['School profile', 'Name, code, phone and location', Building2],
-              ['Admin access', 'Email and password for login', Users],
-              ['Communication', 'Notices and messages later', Mail],
-              ['Records', 'Timetable, homework and marks', CheckCircle],
-            ].map(([title, description, Icon]) => (
-              <div key={title} className="rounded-3xl border border-[#d9c5b0] bg-[#fffaf3] p-4 backdrop-blur">
-                <Icon className="h-5 w-5 text-[#7a4e2d]" />
-                <p className="mt-3 font-semibold text-[#3f2a1d]">{title}</p>
-                <p className="mt-1 text-sm text-[#6d4c35]">{description}</p>
+      <div className="mx-auto flex w-full flex-col lg:flex-row">
+        {/* Left Side Section */}
+        <div className="flex flex-1 flex-col justify-between p-8 sm:p-12 lg:p-16 text-white">
+          <div>
+            {/* Header Logo */}
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 text-white">
+                <Building2 className="h-6 w-6" />
               </div>
-            ))}
-          </div>
+              <span className="text-xl font-bold tracking-tight">SchoolHub</span>
+            </div>
 
-          <div className="mt-8 rounded-3xl border border-[#d9c5b0] bg-[#f7efe4] p-4 text-sm text-[#6d4c35]">
-            <p className="font-semibold text-[#3f2a1d]">School registration flow</p>
-            <p className="mt-2 leading-6">Fill the form once, create the school, and then login with the same school code for role-based access.</p>
+            {/* Main Title & Subtitle */}
+            <div className="mt-16 max-w-xl">
+              <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl leading-tight">
+                Empower your institution with SchoolHub
+              </h1>
+              <p className="mt-6 text-lg text-slate-300 leading-relaxed">
+                Streamline management, enhance communication, and simplify records with our all-in-one platform.
+              </p>
+            </div>
+
+            {/* Feature Cards Grid */}
+            <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 max-w-2xl">
+              <div className="rounded-2xl bg-white p-5 text-slate-900 shadow-sm">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
+                  <Building2 className="h-5 w-5" />
+                </div>
+                <h3 className="mt-4 font-bold text-base">School Profile</h3>
+                <p className="mt-1 text-xs text-slate-500 leading-relaxed">
+                  Manage name, code, and location.
+                </p>
+              </div>
+
+              <div className="rounded-2xl bg-white p-5 text-slate-900 shadow-sm">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
+                  <Users className="h-5 w-5" />
+                </div>
+                <h3 className="mt-4 font-bold text-base">Admin Access</h3>
+                <p className="mt-1 text-xs text-slate-500 leading-relaxed">
+                  Secure login for school admin.
+                </p>
+              </div>
+
+              <div className="rounded-2xl bg-white p-5 text-slate-900 shadow-sm">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
+                  <Mail className="h-5 w-5" />
+                </div>
+                <h3 className="mt-4 font-bold text-base">Communication</h3>
+                <p className="mt-1 text-xs text-slate-500 leading-relaxed">
+                  Send notices and messages easily.
+                </p>
+              </div>
+
+              <div className="rounded-2xl bg-white p-5 text-slate-900 shadow-sm">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
+                  <FileText className="h-5 w-5" />
+                </div>
+                <h3 className="mt-4 font-bold text-base">Records</h3>
+                <p className="mt-1 text-xs text-slate-500 leading-relaxed">
+                  Organize timetables, homework, and marks.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="rounded-[2rem] border border-[#d9c5b0] bg-[#fffaf3] p-6 text-[#3f2a1d] shadow-lg shadow-[#b68c67]/15 sm:p-8">
-          <div className="mb-6">
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#8a6a50]">New account</p>
-            <h2 className="mt-2 text-3xl font-black tracking-tight text-[#3f2a1d]">Register your School</h2>
-            <p className="mt-2 text-[#6d4c35]">Create an admin account and register your school. Teachers and students are added by the admin from the dashboard.</p>
-          </div>
+        {/* Right Side Section - Form Panel */}
+        <div className="flex flex-1 items-center justify-center bg-[#f2f5f8] p-6 sm:p-12 lg:p-16">
+          <div className="w-full max-w-lg rounded-3xl bg-white p-8 shadow-xl shadow-slate-200/50 sm:p-10">
+            <h2 className="text-center text-3xl font-extrabold text-slate-900">
+              Register your School
+            </h2>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {role === 'admin' ? (
-              <>
+            <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+              {/* Row 1: School Name & Admin Name */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-[#6d4c35]">School Name *</label>
+                  <label className="mb-1.5 block text-xs font-semibold text-slate-700">
+                    School Name <span className="text-red-500">*</span>
+                  </label>
                   <div className="relative">
-                    <Building2 className="absolute left-3 top-3.5 h-5 w-5 text-[#b68c67]" />
+                    <Building2 className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
                     <input
                       type="text"
                       name="schoolName"
                       value={formData.schoolName}
                       onChange={handleChange}
                       placeholder="e.g. ABC Public School"
-                      className="w-full rounded-2xl border border-[#d9c5b0] bg-[#faf4ea] py-3 pl-10 pr-4 outline-none transition placeholder:text-[#a1876d] focus:border-[#7a4e2d] focus:bg-white"
+                      className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-[#6d4c35]">School Code *</label>
-                  <input
-                    type="text"
-                    name="schoolCode"
-                    value={formData.schoolCode}
-                    onChange={handleChange}
-                    placeholder="e.g. SCHOOL001"
-                    className="w-full rounded-2xl border border-[#d9c5b0] bg-[#faf4ea] px-4 py-3 outline-none transition placeholder:text-[#a1876d] focus:border-[#7a4e2d] focus:bg-white"
-                  />
-                  <p className="mt-1 text-xs text-[#8a6a50]">Used for login later.</p>
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-semibold text-[#6d4c35]">Admin Name *</label>
+                  <label className="mb-1.5 block text-xs font-semibold text-slate-700">
+                    Admin Name <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="text"
                     name="adminName"
                     value={formData.adminName}
                     onChange={handleChange}
                     placeholder="e.g. Mr. Principal"
-                    className="w-full rounded-2xl border border-[#d9c5b0] bg-[#faf4ea] px-4 py-3 outline-none transition placeholder:text-[#a1876d] focus:border-[#7a4e2d] focus:bg-white"
+                    className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
                   />
                 </div>
-              </>
-            ) : (
-              <>
-                <div>
-                  <label className="mb-2 block text-sm font-semibold text-[#6d4c35]">School Name *</label>
-                  <input
-                    type="text"
-                    name="schoolName"
-                    value={formData.schoolName}
-                    onChange={handleChange}
-                    placeholder="e.g. ABC Public School"
-                    className="w-full rounded-2xl border border-[#d9c5b0] bg-[#faf4ea] px-4 py-3 outline-none transition placeholder:text-[#a1876d] focus:border-[#7a4e2d] focus:bg-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-semibold text-[#6d4c35]">School Code *</label>
-                  <input
-                    type="text"
-                    name="schoolCodeForMember"
-                    value={formData.schoolCodeForMember}
-                    onChange={handleChange}
-                    placeholder="e.g. SCHOOL001"
-                    className="w-full rounded-2xl border border-[#d9c5b0] bg-[#faf4ea] px-4 py-3 outline-none transition placeholder:text-[#a1876d] focus:border-[#7a4e2d] focus:bg-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-semibold text-[#6d4c35]">Full Name *</label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    placeholder={role === 'teacher' ? 'e.g. Mr. Sharma' : 'e.g. Riya Patel'}
-                    className="w-full rounded-2xl border border-[#d9c5b0] bg-[#faf4ea] px-4 py-3 outline-none transition placeholder:text-[#a1876d] focus:border-[#7a4e2d] focus:bg-white"
-                  />
-                </div>
-              </>
-            )}
-
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-[#6d4c35]">Email Address *</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3.5 h-5 w-5 text-[#b68c67]" />
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder={role === 'admin' ? 'admin@school.com' : 'name@school.com'}
-                  className="w-full rounded-2xl border border-[#d9c5b0] bg-[#faf4ea] py-3 pl-10 pr-4 outline-none transition placeholder:text-[#a1876d] focus:border-[#7a4e2d] focus:bg-white"
-                />
               </div>
-            </div>
 
-            {role === 'admin' && (
-              <>
+              {/* Row 2: Email & Phone */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-[#6d4c35]">Phone Number</label>
+                  <label className="mb-1.5 block text-xs font-semibold text-slate-700">
+                    Email Address <span className="text-red-500">*</span>
+                  </label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-3.5 h-5 w-5 text-[#b68c67]" />
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="namo.andhbhakt@gmail.com"
+                      className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-xs font-semibold text-slate-700">
+                    Phone Number
+                  </label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
                     <input
                       type="tel"
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
                       placeholder="+91 9876543210"
-                      className="w-full rounded-2xl border border-[#d9c5b0] bg-[#faf4ea] py-3 pl-10 pr-4 outline-none transition placeholder:text-[#a1876d] focus:border-[#7a4e2d] focus:bg-white"
+                      className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
                     />
                   </div>
                 </div>
+              </div>
 
+              {/* Row 3: Address */}
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-slate-700">Address</label>
+                <input
+                  type="text"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  placeholder="Street or area name"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
+                />
+              </div>
+
+              {/* Row 4: City & State */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-[#6d4c35]">Address</label>
-                  <input
-                    type="text"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleChange}
-                    placeholder="Street or area name"
-                    className="w-full rounded-2xl border border-[#d9c5b0] bg-[#faf4ea] px-4 py-3 outline-none transition placeholder:text-[#a1876d] focus:border-[#7a4e2d] focus:bg-white"
-                  />
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold text-[#6d4c35]">City</label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-3.5 h-5 w-5 text-[#b68c67]" />
-                      <input
-                        type="text"
-                        name="city"
-                        value={formData.city}
-                        onChange={handleChange}
-                        placeholder="City"
-                        className="w-full rounded-2xl border border-[#d9c5b0] bg-[#faf4ea] py-3 pl-10 pr-4 outline-none transition placeholder:text-[#a1876d] focus:border-[#7a4e2d] focus:bg-white"
-                      />
-                    </div>
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                    <input
+                      type="text"
+                      name="city"
+                      value={formData.city}
+                      onChange={handleChange}
+                      placeholder="City"
+                      className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
+                    />
                   </div>
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold text-[#6d4c35]">State</label>
+                </div>
+                <div>
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
                     <input
                       type="text"
                       name="state"
                       value={formData.state}
                       onChange={handleChange}
                       placeholder="State"
-                      className="w-full rounded-2xl border border-[#d9c5b0] bg-[#faf4ea] px-4 py-3 outline-none transition placeholder:text-[#a1876d] focus:border-[#7a4e2d] focus:bg-white"
+                      className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
                     />
                   </div>
                 </div>
-              </>
-            )}
-
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-[#6d4c35]">Password *</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3.5 h-5 w-5 text-[#b68c67]" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="At least 6 characters"
-                  className="w-full rounded-2xl border border-[#d9c5b0] bg-[#faf4ea] py-3 pl-10 pr-12 outline-none transition placeholder:text-[#a1876d] focus:border-[#7a4e2d] focus:bg-white"
-                />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3.5 text-[#b68c67] transition hover:text-[#7a4e2d]">
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
               </div>
-              <div className="mt-2 space-y-1 text-xs">
-                <p className="font-semibold text-[#6d4c35]">Password requirements:</p>
-                <div className="grid grid-cols-2 gap-2 mt-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className={`inline-block h-2 w-2 rounded-full ${(formData.password || '').length >= 6 ? 'bg-green-500' : 'bg-red-500'}`} />
-                    <span className={(formData.password || '').length >= 6 ? 'text-green-700 font-medium' : 'text-red-700 font-medium'}>Min 6 characters</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className={`inline-block h-2 w-2 rounded-full ${/[A-Z]/.test(formData.password || '') ? 'bg-green-500' : 'bg-red-500'}`} />
-                    <span className={/[A-Z]/.test(formData.password || '') ? 'text-green-700 font-medium' : 'text-red-700 font-medium'}>1 capital letter</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className={`inline-block h-2 w-2 rounded-full ${/[0-9]/.test(formData.password || '') ? 'bg-green-500' : 'bg-red-500'}`} />
-                    <span className={/[0-9]/.test(formData.password || '') ? 'text-green-700 font-medium' : 'text-red-700 font-medium'}>1 number</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className={`inline-block h-2 w-2 rounded-full ${/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(formData.password || '') ? 'bg-green-500' : 'bg-red-500'}`} />
-                    <span className={/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(formData.password || '') ? 'text-green-700 font-medium' : 'text-red-700 font-medium'}>1 special character</span>
-                  </div>
+
+              {/* Password */}
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-slate-700">
+                  Password <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="••••••••"
+                    className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-9 pr-10 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-3 text-slate-400 hover:text-slate-600"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+
+                {/* Progress bar */}
+                <div className="mt-3 flex gap-1.5">
+                  <div className={`h-1.5 flex-1 rounded-full transition-all ${passedCount >= 1 ? 'bg-emerald-600' : 'bg-slate-200'}`} />
+                  <div className={`h-1.5 flex-1 rounded-full transition-all ${passedCount >= 2 ? 'bg-emerald-600' : 'bg-slate-200'}`} />
+                  <div className={`h-1.5 flex-1 rounded-full transition-all ${passedCount >= 3 ? 'bg-emerald-600' : 'bg-slate-200'}`} />
+                  <div className={`h-1.5 flex-1 rounded-full transition-all ${passedCount >= 4 ? 'bg-emerald-600' : 'bg-slate-200'}`} />
+                </div>
+
+                {/* Password requirements list */}
+                <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-600">
+                  <span className="flex items-center gap-1">
+                    <Check className={`h-3 w-3 ${reqs.minLen ? 'text-emerald-600' : 'text-slate-400'}`} />
+                    Min 6 characters
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Check className={`h-3 w-3 ${reqs.capital ? 'text-emerald-600' : 'text-slate-400'}`} />
+                    1 capital letter
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Check className={`h-3 w-3 ${reqs.number ? 'text-emerald-600' : 'text-slate-400'}`} />
+                    1 number
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Check className={`h-3 w-3 ${reqs.special ? 'text-emerald-600' : 'text-slate-400'}`} />
+                    1 special character
+                  </span>
                 </div>
               </div>
-            </div>
 
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-[#6d4c35]">Confirm Password *</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3.5 h-5 w-5 text-[#b68c67]" />
-                <input
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  placeholder="Re-enter password"
-                  className="w-full rounded-2xl border border-[#d9c5b0] bg-[#faf4ea] py-3 pl-10 pr-12 outline-none transition placeholder:text-[#a1876d] focus:border-[#7a4e2d] focus:bg-white"
-                />
-                <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-3.5 text-[#b68c67] transition hover:text-[#7a4e2d]">
-                  {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
+              {/* Confirm Password */}
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-slate-700">
+                  Confirm Password <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    placeholder="••••••••"
+                    className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-9 pr-10 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-3 text-slate-400 hover:text-slate-600"
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
-            </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#7a4e2d] px-5 py-3.5 font-semibold text-[#f7efe4] transition hover:bg-[#624021] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {loading ? (
-                <>
-                  <Loader className="h-5 w-5 animate-spin" />
-                  Registering...
-                </>
-              ) : (
-                <>
-                  {role === 'admin' ? 'Register School' : `Register ${role}`}
-                  <ArrowRight className="h-4 w-4" />
-                </>
-              )}
-            </button>
-          </form>
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#146338] py-3 text-sm font-semibold text-white transition hover:bg-[#0f4d2b] disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {loading ? (
+                  <>
+                    <Loader className="h-4 w-4 animate-spin" />
+                    Registering...
+                  </>
+                ) : (
+                  <>
+                    Register School
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
+              </button>
+            </form>
 
-          <p className="mt-6 border-t border-[#d9c5b0] pt-5 text-center text-sm text-[#6d4c35]">
-            Already have an account?{' '}
-            <Link to="/login" className="font-semibold text-[#7a4e2d] hover:text-[#624021]">
-              Login here
-            </Link>
-          </p>
+            <p className="mt-6 text-center text-xs text-slate-600">
+              Already have an account?{' '}
+              <Link to="/login" className="font-bold text-slate-900 hover:underline">
+                Login here
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>

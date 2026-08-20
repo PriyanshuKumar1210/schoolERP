@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { ArrowRight, BookOpen, Building2, Eye, EyeOff, GraduationCap, Loader, Mail, Lock, ShieldCheck, Users } from 'lucide-react';
+import { ArrowRight, BookOpen, Building2, Eye, EyeOff, GraduationCap, Loader, Mail, Lock, ShieldCheck, Users, BarChart2 } from 'lucide-react';
 import { Toaster, toast } from 'react-hot-toast';
 import { setUser, setSchool } from '../store/authSlice';
 import apiClient from '../utils/apiClient';
@@ -244,115 +244,120 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f4ecdf] px-4 py-10 text-[#3f2a1d] sm:px-6 lg:px-8">
+    <div className="flex min-h-screen items-center justify-center bg-[#f8fafc] px-4 py-8 antialiased">
       <Toaster position="top-right" />
 
-      <div className="mx-auto grid min-h-[calc(100vh-2.5rem)] max-w-7xl gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+      <div className="grid w-full max-w-6xl grid-cols-1 gap-8 lg:grid-cols-2">
         {/* Left Info Panel */}
-        <div className="relative overflow-hidden rounded-[2rem] border border-[#d9c5b0] bg-gradient-hero p-8 shadow-lg shadow-[#b68c67]/15 lg:p-10">
-          <div className="absolute left-0 top-0 h-40 w-40 rounded-full bg-[#e8d4bd] blur-3xl" />
-          <div className="absolute bottom-0 right-0 h-40 w-40 rounded-full bg-[#c9b39a] blur-3xl" />
-          <div className="relative">
-            <div className="mb-6 flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#7a4e2d] text-[#f7efe4]">
-                <BookOpen className="h-6 w-6" />
+        <div className="flex flex-col justify-between rounded-2xl bg-[#eff6ff] p-8 lg:p-12">
+          <div>
+            {/* Logo */}
+            <div className="mb-10 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white p-2 shadow-sm border border-slate-200/60">
+                <GraduationCap className="h-6 w-6 text-slate-800" />
               </div>
               <div>
-                <p className="text-lg font-extrabold text-[#3f2a1d]">SchoolHub</p>
-                <p className="text-sm text-[#7f634e]">Login portal</p>
+                <span className="block text-base font-bold text-slate-900 leading-tight">SchoolHub</span>
+                <span className="block text-xs font-medium text-slate-500">Login portal</span>
               </div>
             </div>
 
-            <h1 className="max-w-xl text-5xl font-black leading-tight tracking-tight text-[#3f2a1d] lg:text-6xl">
+            {/* Main Title */}
+            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl lg:leading-[1.15]">
               Login is the gate for the school system.
             </h1>
-            <p className="mt-5 max-w-xl text-lg leading-8 text-[#6d4c35]">
+            <p className="mt-4 text-base leading-relaxed text-slate-600">
               Enter your school credentials to open the dashboard. The system will identify your role automatically.
             </p>
+          </div>
 
-            <div className="mt-8 grid gap-4 sm:grid-cols-2">
-              {[
-                ['JWT auth', 'Token based login flow', ShieldCheck],
-                ['Role access', 'Automatic from credentials', Users],
-                ['School code', 'Keeps each school separate', Building2],
-                ['Reports', 'PDF and Excel exports later', GraduationCap],
-              ].map(([title, description, Icon]) => (
-                <div key={title} className="rounded-3xl border border-[#d9c5b0] bg-[#fffaf3] p-4 backdrop-blur">
-                  <Icon className="h-5 w-5 text-[#7a4e2d]" />
-                  <p className="mt-3 font-semibold text-[#3f2a1d]">{title}</p>
-                  <p className="mt-1 text-sm text-[#6d4c35]">{description}</p>
-                </div>
-              ))}
-            </div>
+          {/* Feature Grid */}
+          <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {[
+              ['JWT auth', 'Token based login flow', ShieldCheck],
+              ['Role access', 'Automatic from credentials', Users],
+              ['School code', 'Keeps each school separate', Building2],
+              ['Reports', 'PDF and Excel exports later', BarChart2],
+            ].map(([title, description, Icon]) => (
+              <div key={title} className="rounded-xl bg-white p-4 shadow-sm border border-slate-100">
+                <Icon className="h-5 w-5 text-teal-600" />
+                <p className="mt-3 text-sm font-semibold text-slate-900">{title}</p>
+                <p className="mt-0.5 text-xs text-slate-500">{description}</p>
+              </div>
+            ))}
           </div>
         </div>
 
         {/* Right Form Panel */}
-        <div className="rounded-[2rem] border border-[#d9c5b0] bg-[#fffaf3] p-6 text-[#3f2a1d] shadow-lg shadow-[#b68c67]/15 sm:p-8">
+        <div className="flex flex-col justify-center rounded-2xl bg-white p-8 shadow-sm border border-slate-100 lg:p-12">
           
           {/* VIEW: LOGIN */}
           {view === 'login' && (
             <>
-              <div className="mb-6">
-                <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#8a6a50]">Welcome back</p>
-                <h2 className="mt-2 text-3xl font-black tracking-tight text-[#3f2a1d]">Login to your dashboard</h2>
-                <p className="mt-2 text-[#6d4c35]">Use the school code you got during registration.</p>
+              <div className="mb-8">
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Welcome back</p>
+                <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Login to your dashboard</h2>
+                <p className="mt-2 text-sm text-slate-500">Use the school code generated during registration.</p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-[#6d4c35]">School Code *</label>
+                  <label className="mb-2 block text-xs font-semibold text-slate-700">School Code *</label>
                   <div className="relative">
-                    <Building2 className="absolute left-3 top-3.5 h-5 w-5 text-[#b68c67]" />
+                    <Building2 className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
                     <input
                       type="text"
                       name="schoolCode"
                       value={formData.schoolCode}
                       onChange={handleChange}
-                      placeholder="e.g. SCHOOL001"
-                      className="w-full rounded-2xl border border-[#d9c5b0] bg-[#faf4ea] py-3 pl-10 pr-4 outline-none transition placeholder:text-[#a1876d] focus:border-[#7a4e2d] focus:bg-white uppercase"
+                      placeholder="E.G. SCHOOL001"
+                      className="w-full rounded-lg border border-slate-200 bg-slate-50/50 py-3 pl-10 pr-4 text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:bg-white uppercase placeholder:text-slate-400 placeholder:normal-case"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-[#6d4c35]">Email Address *</label>
+                  <label className="mb-2 block text-xs font-semibold text-slate-700">Email Address *</label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-3.5 h-5 w-5 text-[#b68c67]" />
+                    <Mail className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
                     <input
                       type="email"
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
-                      placeholder="admin@school.com"
-                      className="w-full rounded-2xl border border-[#d9c5b0] bg-[#faf4ea] py-3 pl-10 pr-4 outline-none transition placeholder:text-[#a1876d] focus:border-[#7a4e2d] focus:bg-white"
+                      placeholder="name@school.edu"
+                      className="w-full rounded-lg border border-slate-200 bg-slate-50/50 py-3 pl-10 pr-4 text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:bg-white placeholder:text-slate-400"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <label className="block text-sm font-semibold text-[#6d4c35]">Password *</label>
+                  <div className="mb-2 flex items-center justify-between">
+                    <label className="block text-xs font-semibold text-slate-700">Password *</label>
                     <button
                       type="button"
                       onClick={() => setView('forgot')}
-                      className="text-xs font-semibold text-[#7a4e2d] hover:text-[#624021] transition"
+                      className="text-xs font-medium text-slate-600 hover:text-slate-900 transition"
                     >
                       Forgot password?
                     </button>
                   </div>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-3.5 h-5 w-5 text-[#b68c67]" />
+                    <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
                     <input
                       type={showPassword ? 'text' : 'password'}
                       name="password"
                       value={formData.password}
                       onChange={handleChange}
-                      placeholder="Enter your password"
-                      className="w-full rounded-2xl border border-[#d9c5b0] bg-[#faf4ea] py-3 pl-10 pr-12 outline-none transition placeholder:text-[#a1876d] focus:border-[#7a4e2d] focus:bg-white"
+                      placeholder="••••••••••••"
+                      className="w-full rounded-lg border border-slate-200 bg-slate-50/50 py-3 pl-10 pr-10 text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:bg-white placeholder:text-slate-400"
                     />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3.5 text-[#b68c67] transition hover:text-[#7a4e2d]">
-                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    <button 
+                      type="button" 
+                      onClick={() => setShowPassword(!showPassword)} 
+                      className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 transition"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
                 </div>
@@ -360,11 +365,11 @@ export default function Login() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#7a4e2d] px-5 py-3.5 font-semibold text-[#f7efe4] transition hover:bg-[#624021] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#063d31] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#042d24] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {loading ? (
                     <>
-                      <Loader className="h-5 w-5 animate-spin" />
+                      <Loader className="h-4 w-4 animate-spin" />
                       Logging in...
                     </>
                   ) : (
@@ -381,23 +386,23 @@ export default function Login() {
           {/* VIEW: FORGOT PASSWORD */}
           {view === 'forgot' && (
             <>
-              <div className="mb-6">
-                <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#8a6a50]">Security Access</p>
-                <h2 className="mt-2 text-3xl font-black tracking-tight text-[#3f2a1d]">Forgot Password</h2>
-                <p className="mt-2 text-[#6d4c35]">Enter your registered email address to receive a verification code.</p>
+              <div className="mb-8">
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Security Access</p>
+                <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Forgot Password</h2>
+                <p className="mt-2 text-sm text-slate-500">Enter your registered email address to receive a verification code.</p>
               </div>
 
               <form onSubmit={handleForgotPasswordSubmit} className="space-y-5">
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-[#6d4c35]">Email Address *</label>
+                  <label className="mb-2 block text-xs font-semibold text-slate-700">Email Address *</label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-3.5 h-5 w-5 text-[#b68c67]" />
+                    <Mail className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
                     <input
                       type="email"
                       value={forgotEmail}
                       onChange={(e) => setForgotEmail(e.target.value)}
-                      placeholder="e.g. user@school.com"
-                      className="w-full rounded-2xl border border-[#d9c5b0] bg-[#faf4ea] py-3 pl-10 pr-4 outline-none transition placeholder:text-[#a1876d] focus:border-[#7a4e2d] focus:bg-white"
+                      placeholder="name@school.edu"
+                      className="w-full rounded-lg border border-slate-200 bg-slate-50/50 py-3 pl-10 pr-4 text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:bg-white placeholder:text-slate-400"
                       required
                     />
                   </div>
@@ -406,11 +411,11 @@ export default function Login() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#7a4e2d] px-5 py-3.5 font-semibold text-[#f7efe4] transition hover:bg-[#624021] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#063d31] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#042d24] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {loading ? (
                     <>
-                      <Loader className="h-5 w-5 animate-spin" />
+                      <Loader className="h-4 w-4 animate-spin" />
                       Sending OTP...
                     </>
                   ) : (
@@ -425,7 +430,7 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => setView('login')}
-                className="mt-4 w-full text-center text-sm font-semibold text-[#7a4e2d] hover:text-[#624021] transition"
+                className="mt-4 w-full text-center text-xs font-medium text-slate-600 hover:text-slate-900 transition"
               >
                 Back to Login
               </button>
@@ -435,39 +440,39 @@ export default function Login() {
           {/* VIEW: VERIFY OTP CODE */}
           {view === 'verify' && (
             <>
-              <div className="mb-6">
-                <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#8a6a50]">Code Sent</p>
-                <h2 className="mt-2 text-3xl font-black tracking-tight text-[#3f2a1d]">Enter Reset Code</h2>
-                <p className="mt-2 text-[#6d4c35]">
-                  We sent a 5-character verification code to <strong>{forgotEmail}</strong>. Code is valid for exactly 1 minute.
+              <div className="mb-8">
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Code Sent</p>
+                <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Enter Reset Code</h2>
+                <p className="mt-2 text-sm text-slate-500">
+                  We sent a 5-character verification code to <strong>{forgotEmail}</strong>. Code is valid for 1 minute.
                 </p>
               </div>
 
               <form onSubmit={handleVerifyCodeSubmit} className="space-y-5">
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-[#6d4c35]">5-Character Code *</label>
+                  <label className="mb-2 block text-xs font-semibold text-slate-700">5-Character Code *</label>
                   <div className="relative">
-                    <ShieldCheck className="absolute left-3 top-3.5 h-5 w-5 text-[#b68c67]" />
+                    <ShieldCheck className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
                     <input
                       type="text"
                       maxLength={5}
                       value={resetCode}
                       onChange={(e) => setResetCode(e.target.value)}
-                      placeholder="e.g. A1#B2"
-                      className="w-full rounded-2xl border border-[#d9c5b0] bg-[#faf4ea] py-3 pl-10 pr-4 outline-none transition placeholder:text-[#a1876d] focus:border-[#7a4e2d] focus:bg-white tracking-widest text-center font-bold"
+                      placeholder="A1#B2"
+                      className="w-full rounded-lg border border-slate-200 bg-slate-50/50 py-3 pl-10 pr-4 text-center font-bold tracking-widest text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:bg-white uppercase placeholder:text-slate-400"
                       required
                     />
                   </div>
                 </div>
 
-                <div className="flex flex-col items-center justify-between border border-[#d9c5b0] bg-[#faf4ea] rounded-2xl p-4 my-2">
-                  <span className="text-sm font-semibold text-[#6d4c35]">
+                <div className="flex flex-col items-center justify-between rounded-lg border border-slate-200 bg-slate-50/50 p-4">
+                  <span className="text-xs font-semibold text-slate-600">
                     {timer > 0 ? (
-                      <span className="flex items-center gap-1.5 text-amber-700 font-bold">
+                      <span className="flex items-center gap-1.5 font-bold text-amber-700">
                         Time remaining: 00:{timer < 10 ? '0' + timer : timer}
                       </span>
                     ) : (
-                      <span className="text-red-700 font-bold">Code has expired!</span>
+                      <span className="font-bold text-red-600">Code has expired!</span>
                     )}
                   </span>
                   
@@ -477,8 +482,8 @@ export default function Login() {
                     disabled={!canResend || loading}
                     className={`mt-2 text-xs font-bold underline transition ${
                       canResend
-                        ? 'text-[#7a4e2d] hover:text-[#624021] cursor-pointer'
-                        : 'text-[#b68c67] cursor-not-allowed opacity-50'
+                        ? 'cursor-pointer text-slate-800 hover:text-black'
+                        : 'cursor-not-allowed text-slate-400 opacity-50'
                     }`}
                   >
                     Resend Code
@@ -488,11 +493,11 @@ export default function Login() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#7a4e2d] px-5 py-3.5 font-semibold text-[#f7efe4] transition hover:bg-[#624021] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#063d31] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#042d24] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {loading ? (
                     <>
-                      <Loader className="h-5 w-5 animate-spin" />
+                      <Loader className="h-4 w-4 animate-spin" />
                       Verifying...
                     </>
                   ) : (
@@ -507,7 +512,7 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => setView('login')}
-                className="mt-4 w-full text-center text-sm font-semibold text-[#7a4e2d] hover:text-[#624021] transition"
+                className="mt-4 w-full text-center text-xs font-medium text-slate-600 hover:text-slate-900 transition"
               >
                 Back to Login
               </button>
@@ -517,68 +522,76 @@ export default function Login() {
           {/* VIEW: RESET PASSWORD */}
           {view === 'reset' && (
             <>
-              <div className="mb-6">
-                <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#8a6a50]">Reset Security</p>
-                <h2 className="mt-2 text-3xl font-black tracking-tight text-[#3f2a1d]">Create New Password</h2>
-                <p className="mt-2 text-[#6d4c35]">Choose a secure password meeting all guidelines below.</p>
+              <div className="mb-8">
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Reset Security</p>
+                <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Create New Password</h2>
+                <p className="mt-2 text-sm text-slate-500">Choose a secure password meeting all guidelines below.</p>
               </div>
 
               <form onSubmit={handleResetPasswordSubmit} className="space-y-5">
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-[#6d4c35]">New Password *</label>
+                  <label className="mb-2 block text-xs font-semibold text-slate-700">New Password *</label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-3.5 h-5 w-5 text-[#b68c67]" />
+                    <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
                     <input
                       type={showNewPassword ? 'text' : 'password'}
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="At least 6 characters"
-                      className="w-full rounded-2xl border border-[#d9c5b0] bg-[#faf4ea] py-3 pl-10 pr-12 outline-none transition placeholder:text-[#a1876d] focus:border-[#7a4e2d] focus:bg-white"
+                      className="w-full rounded-lg border border-slate-200 bg-slate-50/50 py-3 pl-10 pr-10 text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:bg-white placeholder:text-slate-400"
                       required
                     />
-                    <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute right-3 top-3.5 text-[#b68c67] transition hover:text-[#7a4e2d]">
-                      {showNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    <button 
+                      type="button" 
+                      onClick={() => setShowNewPassword(!showNewPassword)} 
+                      className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 transition"
+                    >
+                      {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
 
                   {/* Password requirement visual check indicators */}
-                  <div className="mt-2 space-y-1 text-xs">
-                    <p className="font-semibold text-[#6d4c35]">Password requirements:</p>
-                    <div className="grid grid-cols-2 gap-2 mt-1">
+                  <div className="mt-3 space-y-1 text-xs">
+                    <p className="font-semibold text-slate-600">Password requirements:</p>
+                    <div className="mt-1 grid grid-cols-2 gap-2">
                       <div className="flex items-center gap-1.5">
-                        <span className={`inline-block h-2 w-2 rounded-full ${(newPassword || '').length >= 6 ? 'bg-green-500' : 'bg-red-500'}`} />
-                        <span className={(newPassword || '').length >= 6 ? 'text-green-700 font-medium' : 'text-red-700 font-medium'}>Min 6 characters</span>
+                        <span className={`inline-block h-1.5 w-1.5 rounded-full ${(newPassword || '').length >= 6 ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                        <span className={(newPassword || '').length >= 6 ? 'font-medium text-emerald-700' : 'font-medium text-red-600'}>Min 6 characters</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <span className={`inline-block h-2 w-2 rounded-full ${/[A-Z]/.test(newPassword || '') ? 'bg-green-500' : 'bg-red-500'}`} />
-                        <span className={/[A-Z]/.test(newPassword || '') ? 'text-green-700 font-medium' : 'text-red-700 font-medium'}>1 capital letter</span>
+                        <span className={`inline-block h-1.5 w-1.5 rounded-full ${/[A-Z]/.test(newPassword || '') ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                        <span className={/[A-Z]/.test(newPassword || '') ? 'font-medium text-emerald-700' : 'font-medium text-red-600'}>1 capital letter</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <span className={`inline-block h-2 w-2 rounded-full ${/[0-9]/.test(newPassword || '') ? 'bg-green-500' : 'bg-red-500'}`} />
-                        <span className={/[0-9]/.test(newPassword || '') ? 'text-green-700 font-medium' : 'text-red-700 font-medium'}>1 number</span>
+                        <span className={`inline-block h-1.5 w-1.5 rounded-full ${/[0-9]/.test(newPassword || '') ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                        <span className={/[0-9]/.test(newPassword || '') ? 'font-medium text-emerald-700' : 'font-medium text-red-600'}>1 number</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <span className={`inline-block h-2 w-2 rounded-full ${/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(newPassword || '') ? 'bg-green-500' : 'bg-red-500'}`} />
-                        <span className={/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(newPassword || '') ? 'text-green-700 font-medium' : 'text-red-700 font-medium'}>1 special character</span>
+                        <span className={`inline-block h-1.5 w-1.5 rounded-full ${/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(newPassword || '') ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                        <span className={/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(newPassword || '') ? 'font-medium text-emerald-700' : 'font-medium text-red-600'}>1 special char</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-[#6d4c35]">Confirm Password *</label>
+                  <label className="mb-2 block text-xs font-semibold text-slate-700">Confirm Password *</label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-3.5 h-5 w-5 text-[#b68c67]" />
+                    <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
                     <input
                       type={showConfirmPassword ? 'text' : 'password'}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Confirm your password"
-                      className="w-full rounded-2xl border border-[#d9c5b0] bg-[#faf4ea] py-3 pl-10 pr-12 outline-none transition placeholder:text-[#a1876d] focus:border-[#7a4e2d] focus:bg-white"
+                      className="w-full rounded-lg border border-slate-200 bg-slate-50/50 py-3 pl-10 pr-10 text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:bg-white placeholder:text-slate-400"
                       required
                     />
-                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-3.5 text-[#b68c67] transition hover:text-[#7a4e2d]">
-                      {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    <button 
+                      type="button" 
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)} 
+                      className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 transition"
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
                 </div>
@@ -586,11 +599,11 @@ export default function Login() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#7a4e2d] px-5 py-3.5 font-semibold text-[#f7efe4] transition hover:bg-[#624021] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#063d31] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#042d24] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {loading ? (
                     <>
-                      <Loader className="h-5 w-5 animate-spin" />
+                      <Loader className="h-4 w-4 animate-spin" />
                       Resetting Password...
                     </>
                   ) : (
@@ -605,7 +618,7 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => setView('login')}
-                className="mt-4 w-full text-center text-sm font-semibold text-[#7a4e2d] hover:text-[#624021] transition"
+                className="mt-4 w-full text-center text-xs font-medium text-slate-600 hover:text-slate-900 transition"
               >
                 Back to Login
               </button>
@@ -614,15 +627,15 @@ export default function Login() {
 
           {/* Bottom links (Register & Home) */}
           {view === 'login' && (
-            <div className="mt-6 space-y-3 border-t border-[#d9c5b0] pt-5 text-sm text-[#6d4c35]">
-              <p className="text-center">
+            <div className="mt-8 pt-6 border-t border-slate-100 text-center text-xs text-slate-500 space-y-2">
+              <p>
                 Don&apos;t have a school account?{' '}
-                <Link to="/register" className="font-semibold text-[#7a4e2d] hover:text-[#624021]">
+                <Link to="/register" className="font-semibold text-slate-800 hover:underline">
                   Register here
                 </Link>
               </p>
-              <p className="text-center">
-                <Link to="/" className="font-semibold text-[#7a4e2d] hover:text-[#624021]">
+              <p>
+                <Link to="/" className="text-slate-500 hover:text-slate-800 transition">
                   Back to home
                 </Link>
               </p>
