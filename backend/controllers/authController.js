@@ -282,7 +282,7 @@ exports.login = async (req, res) => {
       return res.status(404).json({ message: "School does not exist" });
     }
 
-    // 2. Search for user across User/Admin or Teacher collections
+    // 2. Search the account collections in role order.
     let user = await User.findOne({
       email,
       schoolId: school._id,
@@ -294,6 +294,11 @@ exports.login = async (req, res) => {
     if (!user) {
       user = await Teacher.findOne({ email, schoolId: school._id }).select("+password");
       role = user?.role || "teacher";
+    }
+
+    if (!user) {
+      user = await Student.findOne({ email, schoolId: school._id }).select("+password");
+      role = user?.role || "student";
     }
 
     if (!user) {
@@ -328,6 +333,20 @@ exports.login = async (req, res) => {
       phone: user.phone || "",
       role: role,
       isActive: user.isActive ?? true,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone || "",
+        role,
+        avatar: user.avatar || null,
+        schoolId: user.schoolId,
+      },
+      school: {
+        id: school._id,
+        name: school.name,
+        schoolCode: school.schoolCode,
+      },
       accessToken,
       refreshToken
     });

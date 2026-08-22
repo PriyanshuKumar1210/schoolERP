@@ -11,15 +11,16 @@ export default function Login() {
   const location = useLocation();
   const dispatch = useDispatch();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const userRole = user?.role;
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
   // Redirect if already authenticated
   useEffect(() => {
-    if (isAuthenticated && user?.role) {
-      navigate(`/${user.role}/dashboard`, { replace: true });
+    if (isAuthenticated && userRole) {
+      navigate(`/${userRole}/dashboard`, { replace: true });
     }
-  }, [isAuthenticated, user, navigate]);
+  }, [isAuthenticated, userRole, navigate]);
 
   // Views: 'login', 'forgot', 'verify', 'reset'
   const [view, setView] = useState('login');
@@ -95,9 +96,14 @@ export default function Login() {
         password: formData.password,
         schoolCode: formData.schoolCode,
       });
-      console.log(response);
-
-      const { user, school, accessToken, refreshToken,userRole } = response.data;
+      const { user, school, accessToken, refreshToken, role } = response.data;
+      const loggedInUser = user || {
+        name: response.data.userName,
+        email: response.data.userEmail,
+        phone: response.data.phone,
+        role,
+      };
+      const loggedInRole = loggedInUser.role || role;
 
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
@@ -105,13 +111,12 @@ export default function Login() {
       // Clear the loggedOut guard so this fresh login is trusted
       sessionStorage.removeItem('loggedOut');
 
-      dispatch(setUser(user));
+      dispatch(setUser(loggedInUser));
       dispatch(setSchool(school));
 
       toast.success('Login successful!');
 
-      setTimeout(() => {
-        switch (userRole) {
+      switch (loggedInRole) {
           case 'admin':
             navigate('/admin/dashboard', { replace: true });
             break;
@@ -123,8 +128,7 @@ export default function Login() {
             break;
           default:
             navigate('/', { replace: true });
-        }
-      }, 1000);
+      }
     } catch (error) {
       toast.error(error.response?.data?.message || 'Login failed. Please check your credentials.');
     } finally {
