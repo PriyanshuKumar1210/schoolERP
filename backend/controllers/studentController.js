@@ -98,14 +98,6 @@ exports.createStudent = async (req, res) => {
   try {
     const { name, email, password, phone, rollNumber, registrationNumber, classId, division, ...rest } = req.body;
 
-    // Check if any classes/standards and subjects exist for this school
-    const classCount = await Class.countDocuments({ schoolId: req.user.schoolId });
-    const Subject = require('../models/Subject');
-    const subjectCount = await Subject.countDocuments({ schoolId: req.user.schoolId });
-    if (classCount === 0 || subjectCount === 0) {
-      return res.status(400).json({ message: 'Student and teacher cannot be added unless and until both class (standards/divisions) and subjects are configured' });
-    }
-
     // Check if student exists
     let student = await Student.findOne({ email, schoolId: req.user.schoolId });
     if (student) {

@@ -1,6 +1,23 @@
 const Teacher = require('../models/Teacher');
 const User = require('../models/User');
 const Class = require('../models/Class');
+const mongoose = require('mongoose');
+
+// Accept the database _id used by the UI as well as the public teacher or
+// employee ID. This keeps update/delete working for all teacher ID displays.
+const getTeacherLookup = (id, schoolId) => {
+  const identifier = String(id || '').trim();
+  const identifiers = [
+    { teacherId: identifier },
+    { employeeId: identifier },
+  ];
+
+  if (mongoose.isValidObjectId(identifier)) {
+    identifiers.unshift({ _id: identifier });
+  }
+
+  return { schoolId, $or: identifiers };
+};
 
 // Helper to resolve Class ID from typed standard and division
 const resolveClassId = async (schoolId, standard, division) => {
@@ -61,7 +78,7 @@ exports.getAllTeachers = async (req, res) => {
 // Get Teacher by ID
 exports.getTeacherById = async (req, res) => {
   try {
-    let teacher = await Teacher.findById(req.params.id)
+    let teacher = await Teacher.findOne(getTeacherLookup(req.params.id, req.user.schoolId))
       .populate('subjectIds', 'name code')
       .populate('classIds', 'standard division')
       .populate('schoolId')
@@ -78,12 +95,7 @@ exports.getTeacherById = async (req, res) => {
       return res.status(404).json({ message: 'Teacher not found' });
     }
 
-    // Check school access
-    if (teacher.schoolId._id.toString() !== req.user.schoolId) {
-      return res.status(403).json({ message: 'Access denied' });
-    }
-
-    if (req.user.role === 'teacher' && req.user.userId !== req.params.id) {
+    if (req.user.role === 'teacher' && req.user.userId !== teacher._id.toString()) {
       return res.status(403).json({ message: 'Access denied' });
     }
 
@@ -98,17 +110,8 @@ exports.createTeacher = async (req, res) => {
   try {
     const { name, email, password, phone, employeeId, ...rest } = req.body;
 
-    // Check if any classes/standards and subjects exist for this school
-    const Class = require('../models/Class');
-    const classCount = await Class.countDocuments({ schoolId: req.user.schoolId });
-    const Subject = require('../models/Subject');
-    const subjectCount = await Subject.countDocuments({ schoolId: req.user.schoolId });
-    if (classCount === 0 || subjectCount === 0) {
-      return res.status(400).json({ message: 'Student and teacher cannot be added unless and until both class (standards/divisions) and subjects are configured' });
-    }
-
     // Check if teacher exists
-    let teacher = await Teacher.findOne({ email, schoolId: req.user.schoolId });
+    let teacher = await Teacher.findOne({ email,staffCode });
     if (teacher) {
       return res.status(400).json({ message: 'Teacher already exists' });
     }
@@ -130,7 +133,7 @@ exports.createTeacher = async (req, res) => {
 
     const School = require('../models/School');
     const schoolData = await School.findById(req.user.schoolId);
-    const schoolCode = schoolData ? schoolData.code : '';
+    const schoolCode = schoolData ? schoolData.schoolCode : '';
     const schoolName = schoolData ? schoolData.name : '';
 
     teacher = await Teacher.create({
@@ -142,7 +145,7 @@ exports.createTeacher = async (req, res) => {
       schoolId: req.user.schoolId,
       schoolCode,
       schoolName,
-      employeeId,
+      employeeId: employeeId?.trim() || undefined,
       classTeacherOf,
       ...rest,
     });
@@ -187,6 +190,18 @@ exports.createTeacher = async (req, res) => {
 // Update Teacher
 exports.updateTeacher = async (req, res) => {
   try {
+    // Do not allow form data to overwrite ownership or generated identifiers.
+    delete req.body._id;
+    delete req.body.teacherId;
+    delete req.body.schoolId;
+    delete req.body.role;
+    const clearEmployeeId = req.body.employeeId !== undefined && !String(req.body.employeeId).trim();
+    if (clearEmployeeId) {
+      delete req.body.employeeId;
+    } else if (req.body.employeeId !== undefined) {
+      req.body.employeeId = req.body.employeeId.trim();
+    }
+
     if (req.body.isClassTeacher !== undefined) {
       if (req.body.isClassTeacher && req.body.classTeacherStandard && req.body.classTeacherDivision) {
         req.body.classTeacherOf = await resolveClassId(
@@ -209,13 +224,17 @@ exports.updateTeacher = async (req, res) => {
     const School = require('../models/School');
     const schoolData = await School.findById(req.user.schoolId);
     if (schoolData) {
-      req.body.schoolCode = schoolData.code;
+      req.body.schoolCode = schoolData.schoolCode;
       req.body.schoolName = schoolData.name;
     }
 
+    const update = clearEmployeeId
+      ? { $set: req.body, $unset: { employeeId: 1 } }
+      : req.body;
+
     let teacher = await Teacher.findOneAndUpdate(
-      { _id: req.params.id, schoolId: req.user.schoolId },
-      req.body,
+      getTeacherLookup(req.params.id, req.user.schoolId),
+      update,
       { new: true, runValidators: true }
     );
 
@@ -262,13 +281,16 @@ exports.deleteTeacher = async (req, res) => {
       return res.status(403).json({ message: 'Access denied. Only administrators can delete teachers.' });
     }
 
-    const teacher = await Teacher.findOneAndDelete({
-      _id: req.params.id,
-      schoolId: req.user.schoolId,
-    });
+    const teacher = await Teacher.findOneAndDelete(
+      getTeacherLookup(req.params.id, req.user.schoolId)
+    );
 
     if (!teacher) {
       return res.status(404).json({ message: 'Teacher not found' });
+    }
+
+    if (teacher.classTeacherOf) {
+      await Class.findByIdAndUpdate(teacher.classTeacherOf, { $unset: { classTeacherId: 1 } });
     }
 
     // Clean up uploaded documents in Cloudinary

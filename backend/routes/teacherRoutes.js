@@ -4,7 +4,7 @@ const teacherController = require('../controllers/teacherController');
 const { authenticate, authorize } = require('../middleware/auth');
 
 // Get All Teachers
-router.get('/', authenticate, authorize('admin'), teacherController.getAllTeachers);
+// router.get('/', authenticate, authorize('admin'), teacherController.getAllTeachers);
 
 // Get Teacher by ID
 router.get('/:id', authenticate, authorize('admin'), teacherController.getTeacherById);

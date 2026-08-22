@@ -750,10 +750,6 @@ const AdminDashboard = () => {
   }, [selectedViewClassId]);
 
   const handleOpenAddTeacher = () => {
-    if (classes.length === 0) {
-      toast.error('student and teacher cannot be added unless and until the std and division are not set');
-      return;
-    }
     setEditingTeacherId(null);
     setTeacherForm({
       name: '', email: '', password: '', phone: '', employeeId: '', staffCode: '',
@@ -844,10 +840,6 @@ const AdminDashboard = () => {
   };
 
   const handleOpenAddStudent = () => {
-    if (classes.length === 0) {
-      toast.error('student and teacher cannot be added unless and until the std and division are not set');
-      return;
-    }
     setEditingStudentId(null);
     setStudentForm({
       name: '', email: '', password: '', phone: '', rollNumber: '', admissionNumber: '',
@@ -1000,7 +992,6 @@ const AdminDashboard = () => {
           resume: teacherForm.docResume,
         }
       };
-
       if (editingTeacherId) {
         await apiClient.put(`/teachers/${editingTeacherId}`, payload);
         toast.success('Teacher updated successfully!');
@@ -1012,6 +1003,7 @@ const AdminDashboard = () => {
       setEditingTeacherId(null);
       fetchData();
     } catch (err) {
+      console.log(err.response)
       toast.error(err.response?.data?.message || 'Failed to save teacher');
     }
   };

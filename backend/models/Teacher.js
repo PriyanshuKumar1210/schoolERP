@@ -69,12 +69,13 @@ const teacherSchema = new mongoose.Schema(
     // 1. Basic Information
     teacherId: {
       type: String,
+      unique: true,
       default: () => 'TCH' + Math.floor(100000 + Math.random() * 900000), // Auto generated Teacher ID
     },
     employeeId: {
       type: String,
-      unique: true,
       sparse: true,
+      trim: true,
     },
     staffCode: {
       type: String,
@@ -298,6 +299,18 @@ teacherSchema.pre('validate', function (next) {
   }
   next();
 });
+
+// Employee IDs only need to be unique inside a school. Empty optional values
+// are omitted so multiple teachers can be created without an Employee ID.
+teacherSchema.pre('save', function (next) {
+  if (!this.employeeId) this.employeeId = undefined;
+  next();
+});
+
+teacherSchema.index(
+  { schoolId: 1, employeeId: 1 },
+  { unique: true, sparse: true }
+);
 
 // Compound unique index: email + schoolId
 teacherSchema.index({ email: 1, schoolId: 1 }, { unique: true });
